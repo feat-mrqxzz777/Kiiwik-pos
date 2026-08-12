@@ -1,0 +1,67 @@
+/* PALETA DE COLORES Y ESTILOS NEO-BRUTALISTAS KIIWIK POS */
+.root {
+    -fx-bg-neutro: #C8DCEE;
+    -fx-primary: #3B82F6;
+    -fx-secondary: #FF007A;
+    -fx-terciary: #FFC107;
+    -fx-error: #FF0033;
+    -fx-dark: #1A1A1A;
+    -fx-white: #FFFFFF;
+    
+    -fx-font-family: "Segoe UI", Helvetica, Arial, sans-serif;
+}
+
+/* FONDO DE VENTANAS */
+.main-window {
+    -fx-background-color: -fx-bg-neutro;
+}
+
+/* CONTENEDORES Y TARJETAS */
+.brutalist-card {
+    -fx-background-color: -fx-white;
+    -fx-border-color: -fx-dark;
+    -fx-border-width: 2px;
+}
+
+/* BOTONES CON EFECTOS HOVER */
+.btn-primary {
+    -fx-background-color: -fx-primary;
+    -fx-text-fill: -fx-white;
+    -fx-border-color: -fx-dark;
+    -fx-border-width: 2px;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+}
+.btn-primary:hover {
+    -fx-background-color: #2563EB;
+}
+
+.btn-secondary {
+    -fx-background-color: -fx-secondary;
+    -fx-text-fill: -fx-white;
+    -fx-border-color: -fx-dark;
+    -fx-border-width: 2px;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+}
+.btn-secondary:hover {
+    -fx-background-color: #E0006C;
+}
+
+.btn-danger {
+    -fx-background-color: -fx-error;
+    -fx-text-fill: -fx-white;
+    -fx-border-color: -fx-dark;
+    -fx-border-width: 2px;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+}
+
+.badge-warning {
+    -fx-background-color: -fx-terciary;
+    -fx-text-fill: -fx-dark;
+    -fx-border-color: -fx-dark;
+    -fx-border-width: 1px;
+    -fx-font-weight: bold;
+}
+

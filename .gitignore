@@ -1,1 +1,16 @@
+# Archivos de compilación de Maven
 KiiwikPOS/target/
+target/
+
+# Archivos de configuración local e índices de NetBeans
+.nb-gradle/
+.nbproject/
+**/private/
+
+# Archivos temporales del sistema operativo Linux / Windows / Mac
+*.log
+.DS_Store
+Thumbs.db
+
+# Configuración local de base de datos o secretos (si aplica)
+*.tmp
