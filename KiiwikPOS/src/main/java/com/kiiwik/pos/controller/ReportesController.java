@@ -1,10 +1,10 @@
 package com.kiiwik.pos.controller;
 
+import com.kiiwik.pos.dao.VentaDAO;
 import com.kiiwik.pos.model.Venta;
 import java.net.URL;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.ResourceBundle;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -16,6 +16,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
@@ -37,19 +38,28 @@ public class ReportesController implements Initializable {
     @FXML private TableColumn<Venta, String> colMetodoPago;
     @FXML private TableColumn<Venta, Double> colTotal;
 
+    private final VentaDAO ventaDAO = new VentaDAO();
     private final ObservableList<Venta> listaVentas = FXCollections.observableArrayList();
     private FilteredList<Venta> listaFiltrada;
-    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         configurarTabla();
-        cargarDatosPrueba();
+        cargarVentasDesdeBD();
         inicializarFechas();
-        calcularMetricas();
+        handleGenerarReporte(null); // Aplica el filtro de fecha inicial
+
+        // Evento: Doble clic en una fila de la tabla para ver sus productos
+        tblReportes.setOnMouseClicked(event -> {
+            if (event.getClickCount() == 2 && tblReportes.getSelectionModel().getSelectedItem() != null) {
+                Venta ventaSeleccionada = tblReportes.getSelectionModel().getSelectedItem();
+                mostrarModalDetalle(ventaSeleccionada);
+            }
+        });
     }
 
     private void configurarTabla() {
+        // Vincula los atributos del modelo Venta a las columnas de la tabla
         colIdVenta.setCellValueFactory(new PropertyValueFactory<>("idVenta"));
         colFecha.setCellValueFactory(new PropertyValueFactory<>("fecha"));
         colMetodoPago.setCellValueFactory(new PropertyValueFactory<>("metodoPago"));
@@ -64,6 +74,17 @@ public class ReportesController implements Initializable {
         dpFin.setValue(LocalDate.now());
     }
 
+    /**
+     * Consulta el historial de ventas reales desde MySQL usando VentaDAO
+     */
+    private void cargarVentasDesdeBD() {
+        listaVentas.clear();
+        List<Venta> ventasBD = ventaDAO.obtenerTodas();
+        if (ventasBD != null) {
+            listaVentas.addAll(ventasBD);
+        }
+    }
+
     @FXML
     private void handleGenerarReporte(ActionEvent event) {
         LocalDate fechaInicio = dpInicio.getValue();
@@ -74,12 +95,15 @@ public class ReportesController implements Initializable {
         }
 
         listaFiltrada.setPredicate(venta -> {
+            if (venta.getFecha() == null || venta.getFecha().length() < 10) {
+                return false;
+            }
             try {
-                // Parseamos la fecha del string del objeto Venta
+                // Parsea la fecha del String devuelto por MySQL (ej. "2026-08-14 11:21:49")
                 LocalDate fechaVenta = LocalDate.parse(venta.getFecha().substring(0, 10));
                 return (!fechaVenta.isBefore(fechaInicio)) && (!fechaVenta.isAfter(fechaFin));
             } catch (Exception e) {
-                return true;
+                return false;
             }
         });
 
@@ -101,19 +125,32 @@ public class ReportesController implements Initializable {
         lblTicketPromedio.setText(String.format("%.2f MXN", promedio));
     }
 
-    private void cargarDatosPrueba() {
-        listaVentas.clear();
-        String hoy = LocalDateTime.now().format(formatter);
-        String ayer = LocalDateTime.now().minusDays(1).format(formatter);
-        String haceTresDias = LocalDateTime.now().minusDays(3).format(formatter);
+    /**
+     * Ventana emergente que muestra los productos incluidos en la venta seleccionada
+     */
+    private void mostrarModalDetalle(Venta venta) {
+        List<String> productos = ventaDAO.obtenerDetallesTexto(venta.getIdVenta());
 
-        listaVentas.addAll(
-            new Venta(1, hoy, "Efectivo", 285.00),
-            new Venta(2, hoy, "Transferencia", 450.00),
-            new Venta(3, ayer, "Efectivo", 120.00),
-            new Venta(4, ayer, "Efectivo", 600.00),
-            new Venta(5, haceTresDias, "Transferencia", 210.00)
-        );
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Detalle de Venta #" + venta.getIdVenta());
+        alert.setHeaderText("Productos incluidos en la Venta #" + venta.getIdVenta());
+
+        StringBuilder contenido = new StringBuilder();
+        contenido.append("Fecha: ").append(venta.getFecha()).append("\n");
+        contenido.append("Método de Pago: ").append(venta.getMetodoPago()).append("\n");
+        contenido.append("Total: $").append(String.format("%.2f", venta.getTotal())).append(" MXN\n\n");
+        contenido.append("--- LISTA DE PRODUCTOS ---\n");
+
+        if (productos.isEmpty()) {
+            contenido.append("No se encontraron detalles para esta venta.");
+        } else {
+            for (String p : productos) {
+                contenido.append(p).append("\n");
+            }
+        }
+
+        alert.setContentText(contenido.toString());
+        alert.showAndWait();
     }
 
     @FXML

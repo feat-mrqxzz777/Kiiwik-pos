@@ -24,6 +24,7 @@
                <children>
                   <Button onAction="#handleIrPuntoDeVenta" styleClass="btn-secondary" text="🛒 Punto de Venta" />
                   <Button styleClass="btn-primary" text="📦 Inventario" />
+                  <Button onAction="#handleIrReportes" styleClass="btn-secondary" text="📊 Reportes" />
                </children>
             </HBox>
          </children>

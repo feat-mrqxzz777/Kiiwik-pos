@@ -1,5 +1,6 @@
 package com.kiiwik.pos.controller;
 
+import com.kiiwik.pos.dao.ProductoDAO;
 import com.kiiwik.pos.model.Producto;
 import java.net.URL;
 import java.util.Optional;
@@ -32,13 +33,16 @@ public class InventarioController implements Initializable {
     @FXML private TableColumn<Producto, Double> colPrecio;
     @FXML private TableColumn<Producto, Integer> colStock;
 
+    // Conector DAO a MySQL
+    private final ProductoDAO productoDAO = new ProductoDAO();
+    
     private final ObservableList<Producto> listaProductos = FXCollections.observableArrayList();
     private FilteredList<Producto> listaFiltrada;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         configurarTabla();
-        cargarDatosPrueba();
+        cargarProductosDesdeBD();
         configurarFiltros();
     }
 
@@ -52,6 +56,14 @@ public class InventarioController implements Initializable {
 
         listaFiltrada = new FilteredList<>(listaProductos, p -> true);
         tblInventario.setItems(listaFiltrada);
+    }
+
+    /**
+     * Carga todos los productos activos (activo = 1) desde MySQL
+     */
+    private void cargarProductosDesdeBD() {
+        listaProductos.clear();
+        listaProductos.addAll(productoDAO.obtenerTodos());
     }
 
     private void configurarFiltros() {
@@ -108,13 +120,18 @@ public class InventarioController implements Initializable {
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
         confirm.setTitle("Confirmar Desactivación");
         confirm.setHeaderText("¿Estás seguro de dar de baja este producto?");
-        confirm.setContentText("El producto \"" + seleccionado.getNombre() + "\" (ID: " + seleccionado.getId() + ") cambiará a estado inactivo (activo = 0).");
+        confirm.setContentText("El producto \"" + seleccionado.getNombre() + "\" (ID: " + seleccionado.getId() + ") cambiará a estado inactivo en la base de datos.");
 
         Optional<ButtonType> result = confirm.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
-            // Se remueve de la vista activa para simular el borrado lógico en interfaz
-            listaProductos.remove(seleccionado);
-            mostrarAlerta("Producto Desactivado", "El producto fue dado de baja correctamente.");
+            // Ejecutar borrado lógico en MySQL (activo = 0)
+            boolean exito = productoDAO.eliminarLogico(seleccionado.getId());
+            if (exito) {
+                cargarProductosDesdeBD();
+                mostrarAlerta("Producto Desactivado", "El producto fue dado de baja correctamente en la base de datos.");
+            } else {
+                mostrarAlerta("Error", "No se pudo desactivar el producto en la base de datos.");
+            }
         }
     }
 
@@ -165,8 +182,8 @@ public class InventarioController implements Initializable {
                     int stock = Integer.parseInt(txtStock.getText());
 
                     if (esNuevo) {
-                        int nuevoId = listaProductos.stream().mapToInt(Producto::getId).max().orElse(0) + 1;
-                        return new Producto(nuevoId, nombre, cat, mat, precio, stock);
+                        // Para inserción, el ID lo genera AUTO_INCREMENT en MySQL
+                        return new Producto(0, nombre, cat, mat, precio, stock);
                     } else {
                         pExistente.setNombre(nombre);
                         pExistente.setCategoria(cat);
@@ -184,53 +201,19 @@ public class InventarioController implements Initializable {
 
         Optional<Producto> res = dialog.showAndWait();
         res.ifPresent(p -> {
+            boolean exito;
             if (esNuevo) {
-                listaProductos.add(p);
+                exito = productoDAO.guardar(p);
+            } else {
+                exito = productoDAO.actualizar(p);
             }
-            tblInventario.refresh();
-        });
-    }
 
-    private void cargarDatosPrueba() {
-        listaProductos.clear();
-        listaProductos.addAll(
-            new Producto(1, "Aretes de acero inoxidable", "Arete", "Acero inoxidable", 55.00, 6),
-            new Producto(2, "Aretes de Laminado", "Arete", "Laminado", 65.00, 80),
-            new Producto(3, "Aretes de perla", "Arete", "Laminado", 130.00, 3),
-            new Producto(4, "Aretes con zirconia", "Arete", "Plata", 150.00, 10),
-            new Producto(5, "Aretes de gota", "Arete", "Plata", 70.00, 2),
-            new Producto(6, "Aretes de corazón", "Arete", "Laminado", 120.00, 1),
-            new Producto(7, "Aretes de flor", "Arete", "Rodio", 150.00, 2),
-            new Producto(8, "Aretes de mariposa", "Arete", "Rodio", 95.00, 5),
-            new Producto(9, "Arracadas lisas", "Arete", "Laminado", 95.00, 2),
-            new Producto(10, "Arracadas con piedras", "Arete", "Laminado", 120.00, 1),
-            new Producto(11, "Arracadas gruesas", "Arete", "Laminado", 120.00, 3),
-            new Producto(12, "Anillos ajustables", "Anillo", "Rodio", 65.00, 16),
-            new Producto(13, "Anillos con zirconia", "Anillo", "Rodio", 85.00, 10),
-            new Producto(14, "Anillos Anti-estrès", "Anillo", "Laminado", 150.00, 5),
-            new Producto(15, "Anillos tipo compromiso", "Anillo", "Laminado", 130.00, 6),
-            new Producto(16, "collares gargatilla", "Cadena", "Laminado", 140.00, 2),
-            new Producto(17, "Collares con dije", "Cadena", "Laminado", 210.00, 7),
-            new Producto(18, "Cadenas gruesas", "Cadena", "Rodio", 250.00, 7),
-            new Producto(19, "Cadenas delgadas", "Cadena", "Rodio", 140.00, 5),
-            new Producto(20, "Pulseras de acero inoxidable", "Pulsera", "Acero inoxidable", 75.00, 6),
-            new Producto(21, "Pulseras de eslabón", "Pulsera", "Rodio", 110.00, 7),
-            new Producto(22, "Pulseras con dijes", "Pulsera", "Laminado", 110.00, 10),
-            new Producto(23, "Tobilleras colgante", "Tobillera", "Laminado", 95.00, 6),
-            new Producto(24, "Dijes variados", "Dije", "Laminado", 65.00, 8),
-            new Producto(25, "Broqueles", "Arete", "Plata", 150.00, 10),
-            new Producto(26, "Ear cuffs", "Arete", "Laminado", 95.00, 2),
-            new Producto(27, "Sets de aretes", "Arete", "Laminado", 120.00, 3),
-            new Producto(28, "Juegos de collar y aretes", "Arete", "Laminado", 210.00, 5),
-            new Producto(29, "Brazaletes", "Brazalete", "Laminado", 120.00, 3),
-            new Producto(30, "Jugui", "Arete", "Rodio", 55.00, 60),
-            new Producto(31, "Cadenas Pl", "Cadena", "Plata", 450.00, 4),
-            new Producto(32, "Pulsera placa", "Pulsera", "Plata", 385.00, 3),
-            new Producto(33, "Anillos Pl", "Anillo", "Plata", 275.00, 7),
-            new Producto(34, "Arete largo", "Arete", "Laminado", 120.00, 7),
-            new Producto(35, "Dije Pl", "Dije", "Plata", 100.00, 8),
-            new Producto(36, "Esclava Hombre", "Pulsera", "Plata", 600.00, 4)
-        );
+            if (exito) {
+                cargarProductosDesdeBD(); // Recargar lista desde MySQL
+            } else {
+                mostrarAlerta("Error de Persistencia", "No se pudieron guardar los cambios en la base de datos.");
+            }
+        });
     }
 
     private void mostrarAlerta(String titulo, String msg) {
@@ -250,6 +233,19 @@ public class InventarioController implements Initializable {
             stage.setScene(new Scene(root));
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    @FXML
+    private void handleIrReportes(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/kiiwik/pos/views/Reportes.fxml"));
+            Parent root = loader.load();
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            stage.setScene(new Scene(root));
+        } catch (Exception e) {
+            e.printStackTrace();
+            mostrarAlerta("Error de navegación", "No se pudo cargar la vista de Reportes.");
         }
     }
 }

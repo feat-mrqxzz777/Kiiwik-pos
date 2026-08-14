@@ -1,7 +1,10 @@
 package com.kiiwik.pos.controller;
 
+import com.kiiwik.pos.dao.ProductoDAO;
+import com.kiiwik.pos.dao.VentaDAO;
 import com.kiiwik.pos.model.DetalleVenta;
 import com.kiiwik.pos.model.Producto;
+import com.kiiwik.pos.model.Venta;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -40,6 +43,10 @@ public class PuntoDeVentaController implements Initializable {
     @FXML private Button btnLimpiar;
     @FXML private Button btnConfirmarCobro;
 
+    // Instancias de DAOs para MySQL
+    private final ProductoDAO productoDAO = new ProductoDAO();
+    private final VentaDAO ventaDAO = new VentaDAO();
+
     private final ObservableList<DetalleVenta> listaCarrito = FXCollections.observableArrayList();
     private final List<Producto> listaProductosBase = new ArrayList<>();
     private double totalPagar = 0.0;
@@ -47,8 +54,8 @@ public class PuntoDeVentaController implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         configurarTabla();
-        configurarFiltros();       // 1. Configuramos los ComboBoxes con materiales y categorías reales
-        cargarCatalogoPrueba();    // 2. Cargamos los 36 productos de tu BD
+        configurarFiltros();
+        cargarCatalogoDesdeBD(); // Carga real desde MySQL
     }
 
     private void configurarFiltros() {
@@ -69,6 +76,15 @@ public class PuntoDeVentaController implements Initializable {
         }
     }
 
+    /**
+     * Consulta todos los productos activos directamente desde la Base de Datos MySQL
+     */
+    public void cargarCatalogoDesdeBD() {
+        listaProductosBase.clear();
+        listaProductosBase.addAll(productoDAO.obtenerTodos());
+        aplicarFiltroCatalogo();
+    }
+
     private void aplicarFiltroCatalogo() {
         String catSel = (cbCategoria != null) ? cbCategoria.getValue() : "Todas";
         String matSel = (cbMaterial != null) ? cbMaterial.getValue() : "Todos";
@@ -78,7 +94,6 @@ public class PuntoDeVentaController implements Initializable {
         pnlCatalogo.getChildren().clear();
 
         for (Producto p : listaProductosBase) {
-            // Normalización para "Dije" vs "Dijes"
             boolean coincideCategoria = catSel == null || catSel.equals("Todas") 
                     || p.getCategoria().equalsIgnoreCase(catSel)
                     || (catSel.equalsIgnoreCase("Dije") && p.getCategoria().equalsIgnoreCase("Dijes"))
@@ -135,6 +150,14 @@ public class PuntoDeVentaController implements Initializable {
 
                 btnSumar.setOnAction(e -> {
                     DetalleVenta item = getTableView().getItems().get(getIndex());
+                    int stockDisponible = obtenerStockProducto(item.getProductoId());
+
+                    if (item.getCantidad() + 1 > stockDisponible) {
+                        mostrarAlerta("Límite de Stock Alcanzado", 
+                            "No puedes agregar más de " + stockDisponible + " unidad(es) de " + item.getNombreProducto() + ".");
+                        return;
+                    }
+
                     item.setCantidad(item.getCantidad() + 1);
                     item.setSubtotal(item.getCantidad() * item.getPrecioUnitario());
                     tblCarrito.refresh();
@@ -150,6 +173,10 @@ public class PuntoDeVentaController implements Initializable {
                 } else {
                     DetalleVenta detalle = getTableView().getItems().get(getIndex());
                     lblCant.setText(String.valueOf(detalle.getCantidad()));
+
+                    int stockDisponible = obtenerStockProducto(detalle.getProductoId());
+                    btnSumar.setDisable(detalle.getCantidad() >= stockDisponible);
+
                     setGraphic(container);
                 }
             }
@@ -158,10 +185,31 @@ public class PuntoDeVentaController implements Initializable {
         tblCarrito.setItems(listaCarrito);
     }
 
+    /**
+     * Busca el stock actual en memoria del producto dado su ID
+     */
+    private int obtenerStockProducto(int productoId) {
+        for (Producto p : listaProductosBase) {
+            if (p.getId() == productoId) {
+                return p.getStock();
+            }
+        }
+        return 0;
+    }
+
     public void agregarAlCarrito(Producto prod) {
+        if (prod.getStock() <= 0) {
+            mostrarAlerta("Sin Stock", "El producto \"" + prod.getNombre() + "\" no tiene unidades disponibles.");
+            return;
+        }
+
         boolean existe = false;
         for (DetalleVenta item : listaCarrito) {
             if (item.getProductoId() == prod.getId()) {
+                if (item.getCantidad() + 1 > prod.getStock()) {
+                    mostrarAlerta("Límite de Stock", "No puedes agregar más unidades que las disponibles en inventario (" + prod.getStock() + ").");
+                    return;
+                }
                 item.setCantidad(item.getCantidad() + 1);
                 item.setSubtotal(item.getCantidad() * item.getPrecioUnitario());
                 existe = true;
@@ -235,75 +283,57 @@ public class PuntoDeVentaController implements Initializable {
         grid.add(lblCambioCalculado, 1, 1);
 
         Node btnFinalizar = dialog.getDialogPane().lookupButton(btnFinalizarType);
-        btnFinalizar.setDisable(true);
 
-        txtEfectivo.textProperty().addListener((obs, oldVal, newVal) -> {
-            try {
-                double efectivo = Double.parseDouble(newVal);
-                double cambio = efectivo - totalPagar;
-                if (cambio >= 0) {
-                    lblCambioCalculado.setText(String.format("$%.2f MXN", cambio));
-                    btnFinalizar.setDisable(false);
-                } else {
-                    lblCambioCalculado.setText("Efectivo insuficiente");
+        // Determinación del método de pago elegido
+        String metodoPago = (rbTransferencia != null && rbTransferencia.isSelected()) ? "Transferencia" : "Efectivo";
+
+        if (metodoPago.equals("Transferencia")) {
+            txtEfectivo.setText(String.valueOf(totalPagar));
+            txtEfectivo.setDisable(true);
+            lblCambioCalculado.setText("$0.00 MXN");
+            btnFinalizar.setDisable(false);
+        } else {
+            btnFinalizar.setDisable(true);
+            txtEfectivo.textProperty().addListener((obs, oldVal, newVal) -> {
+                try {
+                    double efectivo = Double.parseDouble(newVal);
+                    double cambio = efectivo - totalPagar;
+                    if (cambio >= 0) {
+                        lblCambioCalculado.setText(String.format("$%.2f MXN", cambio));
+                        btnFinalizar.setDisable(false);
+                    } else {
+                        lblCambioCalculado.setText("Efectivo insuficiente");
+                        btnFinalizar.setDisable(true);
+                    }
+                } catch (NumberFormatException e) {
+                    lblCambioCalculado.setText("$0.00 MXN");
                     btnFinalizar.setDisable(true);
                 }
-            } catch (NumberFormatException e) {
-                lblCambioCalculado.setText("$0.00 MXN");
-                btnFinalizar.setDisable(true);
-            }
-        });
+            });
+        }
 
         dialog.getDialogPane().setContent(grid);
 
-        dialog.showAndWait().ifPresent(response -> {
-            mostrarAlerta("Venta Exitosa", "Venta procesada con éxito.");
-            handleLimpiarCarrito(null);
+        dialog.setResultConverter(dialogButton -> dialogButton == btnFinalizarType);
+
+        dialog.showAndWait().ifPresent(confirmado -> {
+            if (confirmado) {
+                // 1. Crear el objeto Venta
+                Venta venta = new Venta(0, null, metodoPago, totalPagar);
+
+                // 2. Ejecutar Transacción SQL en MySQL via VentaDAO
+                List<DetalleVenta> detalles = new ArrayList<>(listaCarrito);
+                boolean exito = ventaDAO.registrarVenta(venta, detalles);
+
+                if (exito) {
+                    mostrarAlerta("Venta Exitosa", "Venta registrada con éxito y stock actualizado.");
+                    handleLimpiarCarrito(null);
+                    cargarCatalogoDesdeBD(); // Recarga catálogo para refrescar los nuevos niveles de stock
+                } else {
+                    mostrarAlerta("Error de Transacción", "No se pudo procesar la venta en la base de datos.");
+                }
+            }
         });
-    }
-
-    private void cargarCatalogoPrueba() {
-        listaProductosBase.clear();
-        
-        // 36 productos reales cargados desde tu base de datos
-        listaProductosBase.add(new Producto(1, "Aretes de acero inoxidable", "Arete", "Acero inoxidable", 55.00, 6));
-        listaProductosBase.add(new Producto(2, "Aretes de Laminado", "Arete", "Laminado", 65.00, 80));
-        listaProductosBase.add(new Producto(3, "Aretes de perla", "Arete", "Laminado", 130.00, 3));
-        listaProductosBase.add(new Producto(4, "Aretes con zirconia", "Arete", "Plata", 150.00, 10));
-        listaProductosBase.add(new Producto(5, "Aretes de gota", "Arete", "Plata", 70.00, 2));
-        listaProductosBase.add(new Producto(6, "Aretes de corazón", "Arete", "Laminado", 120.00, 1));
-        listaProductosBase.add(new Producto(7, "Aretes de flor", "Arete", "Rodio", 150.00, 2));
-        listaProductosBase.add(new Producto(8, "Aretes de mariposa", "Arete", "Rodio", 95.00, 5));
-        listaProductosBase.add(new Producto(9, "Arracadas lisas", "Arete", "Laminado", 95.00, 2));
-        listaProductosBase.add(new Producto(10, "Arracadas con piedras", "Arete", "Laminado", 120.00, 1));
-        listaProductosBase.add(new Producto(11, "Arracadas gruesas", "Arete", "Laminado", 120.00, 3));
-        listaProductosBase.add(new Producto(12, "Anillos ajustables", "Anillo", "Rodio", 65.00, 16));
-        listaProductosBase.add(new Producto(13, "Anillos con zirconia", "Anillo", "Rodio", 85.00, 10));
-        listaProductosBase.add(new Producto(14, "Anillos Anti-estrès", "Anillo", "Laminado", 150.00, 5));
-        listaProductosBase.add(new Producto(15, "Anillos tipo compromiso", "Anillo", "Laminado", 130.00, 6));
-        listaProductosBase.add(new Producto(16, "collares gargatilla", "Cadena", "Laminado", 140.00, 2));
-        listaProductosBase.add(new Producto(17, "Collares con dije", "Cadena", "Laminado", 210.00, 7));
-        listaProductosBase.add(new Producto(18, "Cadenas gruesas", "Cadena", "Rodio", 250.00, 7));
-        listaProductosBase.add(new Producto(19, "Cadenas delgadas", "Cadena", "Rodio", 140.00, 5));
-        listaProductosBase.add(new Producto(20, "Pulseras de acero inoxidable", "Pulsera", "Acero inoxidable", 75.00, 6));
-        listaProductosBase.add(new Producto(21, "Pulseras de eslabón", "Pulsera", "Rodio", 110.00, 7));
-        listaProductosBase.add(new Producto(22, "Pulseras con dijes", "Pulsera", "Laminado", 110.00, 10));
-        listaProductosBase.add(new Producto(23, "Tobilleras colgante", "Tobillera", "Laminado", 95.00, 6));
-        listaProductosBase.add(new Producto(24, "Dijes variados", "Dijes", "Laminado", 65.00, 8));
-        listaProductosBase.add(new Producto(25, "Broqueles", "Arete", "Plata", 150.00, 10));
-        listaProductosBase.add(new Producto(26, "Ear cuffs", "Arete", "Laminado", 95.00, 2));
-        listaProductosBase.add(new Producto(27, "Sets de aretes", "Arete", "Laminado", 120.00, 3));
-        listaProductosBase.add(new Producto(28, "Juegos de collar y aretes", "Arete", "Laminado", 210.00, 5));
-        listaProductosBase.add(new Producto(29, "Brazaletes", "Brazalete", "Laminado", 120.00, 3));
-        listaProductosBase.add(new Producto(30, "Jugui", "Arete", "Rodio", 55.00, 60));
-        listaProductosBase.add(new Producto(31, "Cadenas Pl", "Cadena", "Plata", 450.00, 4));
-        listaProductosBase.add(new Producto(32, "Pulsera placa", "Pulsera", "Plata", 385.00, 3));
-        listaProductosBase.add(new Producto(33, "Anillos Pl", "Anillo", "Plata", 275.00, 7));
-        listaProductosBase.add(new Producto(34, "Arete largo", "Arete", "Laminado", 120.00, 7));
-        listaProductosBase.add(new Producto(35, "Dije Pl", "Dije", "Plata", 100.00, 8));
-        listaProductosBase.add(new Producto(36, "Esclava Hombre", "Pulsera", "Plata", 600.00, 4));
-
-        aplicarFiltroCatalogo();
     }
 
     private void mostrarAlerta(String titulo, String msg) {
