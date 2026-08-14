@@ -36,13 +36,13 @@
             <HBox alignment="CENTER_LEFT" spacing="10.0" styleClass="brutalist-card">
                <padding><Insets bottom="10.0" left="10.0" right="10.0" top="10.0" /></padding>
                <children>
-                  <TextField fx:id="txtBuscar" prefWidth="250.0" promptText="🔍 Buscar producto por nombre o código..." style="-fx-border-color: #1A1A1A;" />
-                  <ComboBox fx:id="cmbMaterial" prefWidth="130.0" promptText="Material" style="-fx-border-color: #1A1A1A;" />
+                  <TextField fx:id="txtBuscar" prefWidth="250.0" promptText="🔍 Buscar por nombre o ID..." style="-fx-border-color: #1A1A1A;" />
+                  <ComboBox fx:id="cmbMaterial" prefWidth="150.0" promptText="Material" style="-fx-border-color: #1A1A1A;" />
                   <HBox alignment="CENTER_RIGHT" spacing="10.0" HBox.hgrow="ALWAYS">
                      <children>
-                        <Button styleClass="btn-primary" text="+ Nuevo Producto" />
-                        <Button styleClass="btn-secondary" text="✏️ Editar" />
-                        <Button styleClass="btn-danger" text="🗑️ Eliminar" />
+                        <Button onAction="#handleNuevoProducto" styleClass="btn-primary" text="+ Nuevo Producto" />
+                        <Button onAction="#handleEditarProducto" styleClass="btn-secondary" text="✏️ Editar" />
+                        <Button onAction="#handleEliminarProducto" styleClass="btn-danger" text="🗑️ Eliminar" />
                      </children>
                   </HBox>
                </children>
@@ -50,11 +50,11 @@
 
             <TableView fx:id="tblInventario" style="-fx-border-color: #1A1A1A; -fx-border-width: 2;" VBox.vgrow="ALWAYS">
               <columns>
-                <TableColumn fx:id="colCodigo" prefWidth="100.0" text="Código" />
-                <TableColumn fx:id="colNombre" prefWidth="180.0" text="Producto" />
-                <TableColumn fx:id="colCategoria" prefWidth="120.0" text="Categoría" />
-                <TableColumn fx:id="colMaterial" prefWidth="120.0" text="Material" />
-                <TableColumn fx:id="colPrecio" prefWidth="100.0" text="Precio" />
+                <TableColumn fx:id="colCodigo" prefWidth="80.0" text="ID" />
+                <TableColumn fx:id="colNombre" prefWidth="220.0" text="Producto" />
+                <TableColumn fx:id="colCategoria" prefWidth="130.0" text="Categoría" />
+                <TableColumn fx:id="colMaterial" prefWidth="130.0" text="Material" />
+                <TableColumn fx:id="colPrecio" prefWidth="100.0" text="Precio (MXN)" />
                 <TableColumn fx:id="colStock" prefWidth="90.0" text="Stock" />
               </columns>
             </TableView>

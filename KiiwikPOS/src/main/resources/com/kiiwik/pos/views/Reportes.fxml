@@ -22,6 +22,7 @@
             <HBox alignment="CENTER_RIGHT" spacing="10.0" HBox.hgrow="ALWAYS">
                <children>
                   <Button onAction="#handleIrPuntoDeVenta" styleClass="btn-secondary" text="🛒 Punto de Venta" />
+                  <Button onAction="#handleIrInventario" styleClass="btn-secondary" text="📦 Inventario" />
                   <Button styleClass="btn-primary" text="📊 Reportes" />
                </children>
             </HBox>
@@ -32,6 +33,7 @@
       <VBox spacing="15.0" BorderPane.alignment="CENTER">
          <padding><Insets bottom="15.0" left="15.0" right="15.0" top="15.0" /></padding>
          <children>
+            <!-- Filtro de Fechas -->
             <HBox alignment="CENTER_LEFT" spacing="12.0" styleClass="brutalist-card">
                <padding><Insets bottom="10.0" left="10.0" right="10.0" top="10.0" /></padding>
                <children>
@@ -43,16 +45,56 @@
                      <font><Font name="System Bold" size="12.0" /></font>
                   </Label>
                   <DatePicker fx:id="dpFin" style="-fx-border-color: #1A1A1A;" />
-                  <Button styleClass="btn-primary" text="📊 Generar Reporte" />
+                  <Button onAction="#handleGenerarReporte" styleClass="btn-primary" text="📊 Generar Reporte" />
                </children>
             </HBox>
 
+            <!-- Tarjetas de Métricas Rápidas (KPIs) -->
+            <HBox spacing="15.0">
+               <children>
+                  <VBox alignment="CENTER_LEFT" prefWidth="200.0" styleClass="brutalist-card" style="-fx-background-color: #1A1A1A;">
+                     <padding><Insets bottom="12.0" left="15.0" right="15.0" top="12.0" /></padding>
+                     <children>
+                        <Label text="TOTAL INGRESOS" textFill="#CCCCCC">
+                           <font><Font name="System Bold" size="11.0" /></font>
+                        </Label>
+                        <Label fx:id="lblTotalVendido" text="0.00 MXN" textFill="#F9F6F0">
+                           <font><Font name="System Bold" size="20.0" /></font>
+                        </Label>
+                     </children>
+                  </VBox>
+                  <VBox alignment="CENTER_LEFT" prefWidth="200.0" styleClass="brutalist-card">
+                     <padding><Insets bottom="12.0" left="15.0" right="15.0" top="12.0" /></padding>
+                     <children>
+                        <Label text="TOTAL TICKETS" textFill="#666666">
+                           <font><Font name="System Bold" size="11.0" /></font>
+                        </Label>
+                        <Label fx:id="lblCantidadVentas" text="0" textFill="#1A1A1A">
+                           <font><Font name="System Bold" size="20.0" /></font>
+                        </Label>
+                     </children>
+                  </VBox>
+                  <VBox alignment="CENTER_LEFT" prefWidth="200.0" styleClass="brutalist-card">
+                     <padding><Insets bottom="12.0" left="15.0" right="15.0" top="12.0" /></padding>
+                     <children>
+                        <Label text="TICKET PROMEDIO" textFill="#666666">
+                           <font><Font name="System Bold" size="11.0" /></font>
+                        </Label>
+                        <Label fx:id="lblTicketPromedio" text="0.00 MXN" textFill="#1A1A1A">
+                           <font><Font name="System Bold" size="20.0" /></font>
+                        </Label>
+                     </children>
+                  </VBox>
+               </children>
+            </HBox>
+
+            <!-- Tabla de Historial -->
             <TableView fx:id="tblReportes" style="-fx-border-color: #1A1A1A; -fx-border-width: 2;" VBox.vgrow="ALWAYS">
               <columns>
-                <TableColumn fx:id="colIdVenta" prefWidth="90.0" text="ID Venta" />
-                <TableColumn fx:id="colFecha" prefWidth="140.0" text="Fecha / Hora" />
-                <TableColumn fx:id="colMetodoPago" prefWidth="130.0" text="Método Pago" />
-                <TableColumn fx:id="colTotal" prefWidth="120.0" text="Total Venta" />
+                <TableColumn fx:id="colIdVenta" prefWidth="100.0" text="ID Venta" />
+                <TableColumn fx:id="colFecha" prefWidth="180.0" text="Fecha / Hora" />
+                <TableColumn fx:id="colMetodoPago" prefWidth="150.0" text="Método Pago" />
+                <TableColumn fx:id="colTotal" prefWidth="140.0" text="Total Venta (MXN)" />
               </columns>
             </TableView>
          </children>
