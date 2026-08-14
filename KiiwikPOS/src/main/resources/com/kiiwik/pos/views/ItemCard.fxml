@@ -1,11 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
-<?import java.util.*?>
-<?import javafx.scene.*?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.VBox?>
 
-<AnchorPane id="AnchorPane" prefHeight="400.0" prefWidth="600.0" xmlns:fx="http://javafx.com/fxml/1">
-    
-</AnchorPane>
+<VBox alignment="CENTER" prefWidth="150.0" spacing="8.0" style="-fx-background-color: #ffffff; -fx-border-color: #1A1A1A; -fx-border-width: 1.5; -fx-border-radius: 5; -fx-background-radius: 5; -fx-padding: 10;" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.kiiwik.pos.controller.ItemCardController">
+    <children>
+        <Label fx:id="lblNombreProducto" alignment="CENTER" style="-fx-font-weight: bold; -fx-font-size: 12px; -fx-text-fill: #1A1A1A;" text="Producto" wrapText="true" />
+        <Label fx:id="lblDetalleProducto" style="-fx-font-size: 11px; -fx-text-fill: #555555;" text="Material" />
+        <Label fx:id="lblPrecioProducto" style="-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #2b5b84;" text="0.00 MXN" />
+        <Button fx:id="btnAgregar" prefWidth="110.0" style="-fx-background-color: #1A1A1A; -fx-text-fill: white; -fx-font-size: 11px; -fx-cursor: hand;" text="+ Agregar" />
+    </children>
+</VBox>
