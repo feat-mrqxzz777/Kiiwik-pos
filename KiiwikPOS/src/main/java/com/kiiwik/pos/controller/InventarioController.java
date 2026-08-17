@@ -44,6 +44,7 @@ public class InventarioController implements Initializable {
         configurarTabla();
         cargarProductosDesdeBD();
         configurarFiltros();
+        verificarStockBajo(); // Alerta automática al abrir
     }
 
     private void configurarTabla() {
@@ -53,6 +54,25 @@ public class InventarioController implements Initializable {
         colMaterial.setCellValueFactory(new PropertyValueFactory<>("material"));
         colPrecio.setCellValueFactory(new PropertyValueFactory<>("precio"));
         colStock.setCellValueFactory(new PropertyValueFactory<>("stock"));
+
+        // Formato visual de alerta para stock <= 3
+        colStock.setCellFactory(column -> new TableCell<Producto, Integer>() {
+            @Override
+            protected void updateItem(Integer item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                    setStyle("");
+                } else {
+                    setText(item.toString());
+                    if (item <= 3) {
+                        setStyle("-fx-background-color: #ffcccc; -fx-text-fill: #990000; -fx-font-weight: bold;");
+                    } else {
+                        setStyle("");
+                    }
+                }
+            }
+        });
 
         listaFiltrada = new FilteredList<>(listaProductos, p -> true);
         tblInventario.setItems(listaFiltrada);
@@ -66,13 +86,36 @@ public class InventarioController implements Initializable {
         listaProductos.addAll(productoDAO.obtenerTodos());
     }
 
+    /**
+     * Escanea el inventario y lanza un Pop-Up emergente con los ítems críticos
+     */
+    private void verificarStockBajo() {
+        StringBuilder listaAgotados = new StringBuilder();
+        int contador = 0;
+
+        for (Producto p : listaProductos) {
+            if (p.getStock() <= 3) {
+                listaAgotados.append("• ").append(p.getNombre())
+                             .append(" (Disponibles: ").append(p.getStock()).append(" piezas)\n");
+                contador++;
+            }
+        }
+
+        if (contador > 0) {
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("Alerta de Inventario");
+            alert.setHeaderText("¡Atención! Hay " + contador + " producto(s) con stock crítico:");
+            alert.setContentText(listaAgotados.toString());
+            alert.showAndWait();
+        }
+    }
+
     private void configurarFiltros() {
         cmbMaterial.setItems(FXCollections.observableArrayList(
             "Todos", "Acero inoxidable", "Laminado", "Plata", "Rodio"
         ));
         cmbMaterial.setValue("Todos");
 
-        // Escuchadores de cambio para filtrado en tiempo real
         txtBuscar.textProperty().addListener((obs, oldVal, newVal) -> aplicarFiltros());
         cmbMaterial.valueProperty().addListener((obs, oldVal, newVal) -> aplicarFiltros());
     }
@@ -124,7 +167,6 @@ public class InventarioController implements Initializable {
 
         Optional<ButtonType> result = confirm.showAndWait();
         if (result.isPresent() && result.get() == ButtonType.OK) {
-            // Ejecutar borrado lógico en MySQL (activo = 0)
             boolean exito = productoDAO.eliminarLogico(seleccionado.getId());
             if (exito) {
                 cargarProductosDesdeBD();
@@ -182,7 +224,6 @@ public class InventarioController implements Initializable {
                     int stock = Integer.parseInt(txtStock.getText());
 
                     if (esNuevo) {
-                        // Para inserción, el ID lo genera AUTO_INCREMENT en MySQL
                         return new Producto(0, nombre, cat, mat, precio, stock);
                     } else {
                         pExistente.setNombre(nombre);
@@ -209,7 +250,7 @@ public class InventarioController implements Initializable {
             }
 
             if (exito) {
-                cargarProductosDesdeBD(); // Recargar lista desde MySQL
+                cargarProductosDesdeBD();
             } else {
                 mostrarAlerta("Error de Persistencia", "No se pudieron guardar los cambios en la base de datos.");
             }

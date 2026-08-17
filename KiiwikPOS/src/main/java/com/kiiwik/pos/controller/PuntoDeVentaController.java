@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.ResourceBundle;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -203,6 +204,12 @@ public class PuntoDeVentaController implements Initializable {
             return;
         }
 
+        // Advertencia preventiva para stock crítico (3 o menos unidades restantes)
+        if (prod.getStock() <= 3) {
+            mostrarAlerta("Advertencia de Stock Bajo", 
+                "Quedan pocas unidades disponibles de \"" + prod.getNombre() + "\" (" + prod.getStock() + " piezas en stock).");
+        }
+
         boolean existe = false;
         for (DetalleVenta item : listaCarrito) {
             if (item.getProductoId() == prod.getId()) {
@@ -238,7 +245,8 @@ public class PuntoDeVentaController implements Initializable {
         for (DetalleVenta item : listaCarrito) {
             totalPagar += item.getSubtotal();
         }
-        lblTotal.setText(String.format("%.2f MXN", totalPagar));
+        // Se fuerza el formato con Locale.US
+        lblTotal.setText(String.format(Locale.US, "%.2f MXN", totalPagar));
     }
 
     @FXML
@@ -264,7 +272,8 @@ public class PuntoDeVentaController implements Initializable {
     private void abrirModalCobro() {
         Dialog<Boolean> dialog = new Dialog<>();
         dialog.setTitle("Confirmar Cobro");
-        dialog.setHeaderText("Monto Total: " + String.format("$%.2f MXN", totalPagar));
+        // Se fuerza el formato con Locale.US
+        dialog.setHeaderText("Monto Total: " + String.format(Locale.US, "$%.2f MXN", totalPagar));
 
         ButtonType btnFinalizarType = new ButtonType("Finalizar Venta", ButtonBar.ButtonData.OK_DONE);
         dialog.getDialogPane().getButtonTypes().addAll(btnFinalizarType, ButtonType.CANCEL);
@@ -288,7 +297,7 @@ public class PuntoDeVentaController implements Initializable {
         String metodoPago = (rbTransferencia != null && rbTransferencia.isSelected()) ? "Transferencia" : "Efectivo";
 
         if (metodoPago.equals("Transferencia")) {
-            txtEfectivo.setText(String.valueOf(totalPagar));
+            txtEfectivo.setText(String.format(Locale.US, "%.2f", totalPagar));
             txtEfectivo.setDisable(true);
             lblCambioCalculado.setText("$0.00 MXN");
             btnFinalizar.setDisable(false);
@@ -299,7 +308,8 @@ public class PuntoDeVentaController implements Initializable {
                     double efectivo = Double.parseDouble(newVal);
                     double cambio = efectivo - totalPagar;
                     if (cambio >= 0) {
-                        lblCambioCalculado.setText(String.format("$%.2f MXN", cambio));
+                        // Se fuerza el formato con Locale.US
+                        lblCambioCalculado.setText(String.format(Locale.US, "$%.2f MXN", cambio));
                         btnFinalizar.setDisable(false);
                     } else {
                         lblCambioCalculado.setText("Efectivo insuficiente");

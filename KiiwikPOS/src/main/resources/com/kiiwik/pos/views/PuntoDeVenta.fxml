@@ -18,7 +18,7 @@
    <top>
       <HBox alignment="CENTER_LEFT" spacing="15.0" style="-fx-background-color: #1A1A1A; -fx-padding: 12 20;" BorderPane.alignment="CENTER">
          <children>
-            <Label text="KIIWIK POS - Joyería Ambulante" textFill="WHITE">
+            <Label text="KIIWIK POS - Joyería " textFill="WHITE">
                <font>
                   <Font name="System Bold" size="16.0" />
                </font>
