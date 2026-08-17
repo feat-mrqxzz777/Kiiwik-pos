@@ -1,91 +1,168 @@
-/* PALETA DE COLORES Y ESTILOS NEO-BRUTALISTAS KIIWIK POS */
+/* ==========================================================
+   PALETA PRINCIPAL (GLASSMORPHISM MORADO SUAVE)
+   ========================================================== */
 .root {
-    -fx-bg-neutro: #C8DCEE;
-    -fx-primary: #3B82F6;
-    -fx-secondary: #FF007A;
-    -fx-terciary: #FFC107;
-    -fx-error: #FF0033;
-    -fx-dark: #1A1A1A;
+    /* Fondo con gradiente degradado suave, cristalino y moderno */
+    -fx-bg-neutro: linear-gradient(to bottom right, #E0E7FF 0%, #C7D2FE 35%, #DDD6FE 70%, #F3E8FF 100%);
+    -fx-primary: #7C3AED;
+    -fx-secondary: #EC4899;
+    -fx-error: #F43F5E;
+    -fx-dark: #1E1B4B;
     -fx-white: #FFFFFF;
     
     -fx-font-family: "Segoe UI", Helvetica, Arial, sans-serif;
 }
 
-/* FONDO DE VENTANAS */
 .main-window {
     -fx-background-color: -fx-bg-neutro;
 }
 
-/* CONTENEDORES Y TARJETAS */
-.brutalist-card {
-    -fx-background-color: -fx-white;
-    -fx-border-color: -fx-dark;
-    -fx-border-width: 2px;
+/* ==========================================================
+   HEADER SUPERIOR DE CRISTAL OSCURO (GLASS HEADER)
+   ========================================================== */
+.glass-header {
+    /* Cristal oscuro translúcido con brillo sutil en el borde */
+    -fx-background-color: rgba(18, 19, 28, 0.92) !important;
+    -fx-border-color: transparent transparent rgba(255, 255, 255, 0.15) transparent;
+    -fx-border-width: 1px;
+    -fx-effect: dropshadow(three-pass-box, rgba(15, 23, 42, 0.35), 12, 0, 0, 4);
 }
 
-/* BOTONES CON EFECTOS HOVER */
-.btn-primary {
-    -fx-background-color: -fx-primary;
-    -fx-text-fill: -fx-white;
-    -fx-border-color: -fx-dark;
-    -fx-border-width: 2px;
+.glass-header .header-title,
+.glass-header .label {
+    -fx-text-fill: #FFFFFF !important;
+    -fx-fill: #FFFFFF !important;
+    -fx-font-weight: bold;
+}
+
+/* ==========================================================
+   BOTONES DE NAVEGACIÓN (CON BRILLO Y GLOW CRISTALINO)
+   ========================================================== */
+.btn-nav {
+    -fx-background-radius: 20px;
+    -fx-border-radius: 20px;
     -fx-font-weight: bold;
     -fx-cursor: hand;
+    -fx-padding: 8px 18px;
+    -fx-font-size: 13px;
+    -fx-border-width: 1.5px;
 }
-.btn-primary:hover {
-    -fx-background-color: #2563EB;
+
+/* 1. Punto de Venta */
+.btn-pv {
+    -fx-background-color: rgba(91, 103, 247, 0.9) !important;
+    -fx-text-fill: #FFFFFF !important;
+    -fx-border-color: rgba(165, 180, 252, 0.8);
+    -fx-effect: dropshadow(three-pass-box, rgba(91, 103, 247, 0.5), 10, 0.3, 0, 0);
+}
+
+/* 2. Inventario */
+.btn-inv {
+    -fx-background-color: rgba(236, 72, 153, 0.9) !important;
+    -fx-text-fill: #FFFFFF !important;
+    -fx-border-color: rgba(251, 207, 232, 0.8);
+    -fx-effect: dropshadow(three-pass-box, rgba(236, 72, 153, 0.5), 10, 0.3, 0, 0);
+}
+
+/* 3. Reportes */
+.btn-rep {
+    -fx-background-color: rgba(244, 63, 94, 0.9) !important;
+    -fx-text-fill: #FFFFFF !important;
+    -fx-border-color: rgba(254, 205, 211, 0.8);
+    -fx-effect: dropshadow(three-pass-box, rgba(244, 63, 94, 0.5), 10, 0.3, 0, 0);
+}
+
+.btn-nav:hover {
+    -fx-opacity: 0.92;
+}
+
+/* ==========================================================
+   TARJETAS TIPO CRISTAL (GLASS CARDS)
+   ========================================================== */
+.brutalist-card {
+    /* Fondo blanco translúcido con efecto glass */
+    -fx-background-color: rgba(255, 255, 255, 0.65);
+    -fx-background-radius: 16px;
+    -fx-border-radius: 16px;
+    -fx-border-color: rgba(255, 255, 255, 0.8);
+    -fx-border-width: 1.5px;
+    -fx-effect: dropshadow(three-pass-box, rgba(124, 58, 237, 0.08), 20, 0, 0, 8);
+}
+
+/* ==========================================================
+   TABLA GLASSMÓRFICA
+   ========================================================== */
+.table-view {
+    -fx-background-color: rgba(255, 255, 255, 0.6);
+    -fx-background-radius: 14px;
+    -fx-border-radius: 14px;
+    -fx-border-color: rgba(255, 255, 255, 0.7);
+    -fx-border-width: 1.5px;
+}
+
+.table-view .column-header-background {
+    -fx-background-color: transparent;
+}
+
+.table-view .column-header, .table-view .filler {
+    -fx-background-color: rgba(241, 245, 249, 0.7);
+    -fx-size: 38px;
+    -fx-border-color: transparent;
+}
+
+.table-view .column-header .label {
+    -fx-text-fill: #475569 !important;
+    -fx-font-weight: bold;
+}
+
+.table-view .table-row-cell {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent transparent rgba(226, 232, 240, 0.6) transparent;
+    -fx-text-fill: -fx-dark;
+}
+
+.table-view .table-row-cell:selected {
+    -fx-background-color: rgba(199, 210, 254, 0.7);
+    -fx-text-fill: -fx-primary;
+}
+
+/* ==========================================================
+   BOTONES Y CONTROLES GLASS
+   ========================================================== */
+.btn-primary {
+    -fx-background-color: #7C3AED;
+    -fx-text-fill: #FFFFFF;
+    -fx-background-radius: 10px;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
 }
 
 .btn-secondary {
-    -fx-background-color: -fx-secondary;
-    -fx-text-fill: -fx-white;
-    -fx-border-color: -fx-dark;
-    -fx-border-width: 2px;
+    -fx-background-color: #EC4899;
+    -fx-text-fill: #FFFFFF;
+    -fx-background-radius: 10px;
     -fx-font-weight: bold;
     -fx-cursor: hand;
-}
-.btn-secondary:hover {
-    -fx-background-color: #E0006C;
 }
 
 .btn-danger {
-    -fx-background-color: -fx-error;
-    -fx-text-fill: -fx-white;
-    -fx-border-color: -fx-dark;
-    -fx-border-width: 2px;
+    -fx-background-color: #F43F5E;
+    -fx-text-fill: #FFFFFF;
+    -fx-background-radius: 10px;
     -fx-font-weight: bold;
     -fx-cursor: hand;
 }
 
-.badge-warning {
-    -fx-background-color: -fx-terciary;
+.text-field, .combo-box, .date-picker {
+    -fx-background-color: rgba(255, 255, 255, 0.85);
+    -fx-background-radius: 10px;
+    -fx-border-radius: 10px;
+    -fx-border-color: rgba(199, 210, 254, 0.8);
+    -fx-border-width: 1.5px;
     -fx-text-fill: -fx-dark;
-    -fx-border-color: -fx-dark;
-    -fx-border-width: 1px;
-    -fx-font-weight: bold;
+    -fx-padding: 6px 10px;
 }
 
-/* BOTONES DE NAVEGACIÓN (HEADER) */
-.btn-nav-active {
-    -fx-background-color: -fx-primary;
-    -fx-text-fill: -fx-white;
-    -fx-border-color: -fx-dark;
-    -fx-border-width: 2px;
-    -fx-font-weight: bold;
-    -fx-cursor: hand;
-}
-.btn-nav-active:hover {
-    -fx-background-color: #2563EB;
-}
-
-.btn-nav-inactive {
-    -fx-background-color: -fx-secondary;
-    -fx-text-fill: -fx-white;
-    -fx-border-color: -fx-dark;
-    -fx-border-width: 2px;
-    -fx-font-weight: bold;
-    -fx-cursor: hand;
-}
-.btn-nav-inactive:hover {
-    -fx-background-color: #E0006C;
+.label {
+    -fx-text-fill: -fx-dark;
 }
