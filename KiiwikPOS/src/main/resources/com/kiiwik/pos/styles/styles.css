@@ -65,3 +65,27 @@
     -fx-font-weight: bold;
 }
 
+/* BOTONES DE NAVEGACIÓN (HEADER) */
+.btn-nav-active {
+    -fx-background-color: -fx-primary;
+    -fx-text-fill: -fx-white;
+    -fx-border-color: -fx-dark;
+    -fx-border-width: 2px;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+}
+.btn-nav-active:hover {
+    -fx-background-color: #2563EB;
+}
+
+.btn-nav-inactive {
+    -fx-background-color: -fx-secondary;
+    -fx-text-fill: -fx-white;
+    -fx-border-color: -fx-dark;
+    -fx-border-width: 2px;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+}
+.btn-nav-inactive:hover {
+    -fx-background-color: #E0006C;
+}

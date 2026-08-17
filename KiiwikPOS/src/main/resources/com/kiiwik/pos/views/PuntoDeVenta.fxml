@@ -14,20 +14,19 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<BorderPane prefHeight="600.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.kiiwik.pos.controller.PuntoDeVentaController">
+<BorderPane prefHeight="600.0" prefWidth="900.0" styleClass="main-window" stylesheets="@../styles/styles.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.kiiwik.pos.controller.PuntoDeVentaController">
    <top>
-      <HBox alignment="CENTER_LEFT" spacing="15.0" style="-fx-background-color: #1A1A1A; -fx-padding: 12 20;" BorderPane.alignment="CENTER">
+      <HBox alignment="CENTER_LEFT" prefHeight="50.0" spacing="15.0" style="-fx-background-color: #1A1A1A;" BorderPane.alignment="CENTER">
+         <padding><Insets left="15.0" right="15.0" /></padding>
          <children>
-            <Label text="KIIWIK POS - Joyería " textFill="WHITE">
-               <font>
-                  <Font name="System Bold" size="16.0" />
-               </font>
+            <Label text="KIIWIK POS - Joyería" textFill="#F9F6F0">
+               <font><Font name="System Bold" size="16.0" /></font>
             </Label>
             <HBox alignment="CENTER_RIGHT" spacing="10.0" HBox.hgrow="ALWAYS">
                <children>
-                  <Button style="-fx-background-color: #2b5b84; -fx-text-fill: white;" text="Punto de Venta" />
-                  <Button onAction="#handleIrInventario" style="-fx-background-color: #e91e63; -fx-text-fill: white;" text="Inventario" />
-                  <Button onAction="#handleIrReportes" style="-fx-background-color: #e91e63; -fx-text-fill: white;" text="Reportes" />
+                  <Button styleClass="btn-primary" text="🛒 Punto de Venta" />
+                  <Button onAction="#handleIrInventario" styleClass="btn-secondary" text="📦 Inventario" />
+                  <Button onAction="#handleIrReportes" styleClass="btn-secondary" text="📊 Reportes" />
                </children>
             </HBox>
          </children>
@@ -89,8 +88,8 @@
                         </HBox>
                         <HBox spacing="10.0">
                            <children>
-                              <Button fx:id="btnLimpiar" onAction="#handleLimpiarCarrito" style="-fx-background-color: #d9534f; -fx-text-fill: white;" text="Limpiar" />
-                              <Button fx:id="btnConfirmarCobro" onAction="#handleAbrirModalCobro" prefHeight="25.0" prefWidth="200.0" style="-fx-background-color: #0275d8; -fx-text-fill: white; -fx-font-weight: bold;" text="✔ CONFIRMAR COBRO" HBox.hgrow="ALWAYS" />
+                              <Button fx:id="btnLimpiar" onAction="#handleLimpiarCarrito" styleClass="btn-danger" text="Limpiar" />
+                              <Button fx:id="btnConfirmarCobro" onAction="#handleAbrirModalCobro" prefHeight="25.0" prefWidth="200.0" styleClass="btn-primary" text="✔ CONFIRMAR COBRO" HBox.hgrow="ALWAYS" />
                            </children>
                         </HBox>
                      </children>
