@@ -5,6 +5,7 @@ import com.kiiwik.pos.model.Venta;
 import java.net.URL;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Locale;
 import java.util.ResourceBundle;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -120,9 +121,10 @@ public class ReportesController implements Initializable {
 
         double promedio = cantidad > 0 ? totalVendido / cantidad : 0.0;
 
-        lblTotalVendido.setText(String.format("%.2f MXN", totalVendido));
+        // Se usa Locale.US para forzar el uso del punto decimal (.) en las tarjetas
+        lblTotalVendido.setText(String.format(Locale.US, "%.2f MXN", totalVendido));
         lblCantidadVentas.setText(String.valueOf(cantidad));
-        lblTicketPromedio.setText(String.format("%.2f MXN", promedio));
+        lblTicketPromedio.setText(String.format(Locale.US, "%.2f MXN", promedio));
     }
 
     /**
@@ -138,7 +140,7 @@ public class ReportesController implements Initializable {
         StringBuilder contenido = new StringBuilder();
         contenido.append("Fecha: ").append(venta.getFecha()).append("\n");
         contenido.append("Método de Pago: ").append(venta.getMetodoPago()).append("\n");
-        contenido.append("Total: $").append(String.format("%.2f", venta.getTotal())).append(" MXN\n\n");
+        contenido.append("Total: $").append(String.format(Locale.US, "%.2f", venta.getTotal())).append(" MXN\n\n");
         contenido.append("--- LISTA DE PRODUCTOS ---\n");
 
         if (productos.isEmpty()) {
